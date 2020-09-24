@@ -1,0 +1,77 @@
+package com.guru;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.poi.EncryptedDocumentException;
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class New 
+{
+	public	static Sheet s1;
+	public static void main(String[] args) throws Exception
+	{
+		System.setProperty("webdriver.chrome.driver","/home/bizgaze/Desktop/driver/chromedriver");
+		ChromeDriver driver=new ChromeDriver();
+		driver.manage().window().maximize();
+		driver.get("https://nuronics.dev.zeroco.de/");
+		driver.manage().timeouts().implicitlyWait(50, TimeUnit.SECONDS);
+		driver.findElementById("appUserName").sendKeys("admin");
+		driver.findElementById("appPassword").sendKeys("7LSrAsvJ");
+		driver.findElementByXPath("//*[@id='loginBtn']/span/span").click();
+		driver.findElementByXPath("//div[@id='nuronics']").click();
+		driver.findElementByXPath("//a[@id='submenu-users-content-managers']").click();
+		driver.findElementByXPath("//*[@id='table-list_8791']/div[1]/div[2]/div[2]/zc-actions/div/button").click();	
+
+		FileInputStream fs = new FileInputStream("/home/bizgaze/Desktop/testdata/neuronics.xlsx");
+		Workbook w1=   WorkbookFactory.create(fs);
+		s1=w1.getSheet("Sheet1");
+		int rownum=s1.getLastRowNum();
+		System.out.println(rownum);
+		for(int i=1;i<=rownum;i++)
+		{
+			Row  r=s1.getRow(i);
+			
+			driver.findElementById("first_name").sendKeys(r.getCell(0).getStringCellValue());
+			driver.findElementById("phone").sendKeys(r.getCell(1).getStringCellValue());
+			driver.findElementById("email").sendKeys(r.getCell(2).getStringCellValue());
+			driver.findElementById("password").sendKeys(r.getCell(3).getStringCellValue());
+			driver.findElementById("confirm_password").sendKeys(r.getCell(4).getStringCellValue());
+			driver.findElementById("btnSave").click();
+
+			String sucess=driver.findElementByXPath("//div[@id='toast-container']").getText();
+			System.out.println(sucess);
+
+			if(sucess.equals(driver.findElementByXPath("//div[@id='toast-container']").getText()))
+			{
+				s1.getRow(i).createCell(5).setCellValue("passed");
+			}
+			else
+			{
+				s1.getRow(i).createCell(5).setCellValue("failed");	
+			}	
+			FileOutputStream fos=new FileOutputStream("/home/bizgaze/Desktop/testdata/neuronics.xlsx");      
+			w1.write(fos);
+			driver.findElementById("first_name").clear();
+			driver.findElementById("phone").clear();
+			driver.findElementById("email").clear();
+			driver.findElementById("password").clear();
+			driver.findElementById("confirm_password").clear();
+		}
+		
+	}
+
+
+
+}
